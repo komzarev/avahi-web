@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request
 import subprocess
 from time import sleep
@@ -21,33 +22,87 @@ def avahi():
             print(f"New name: {new_name} host: {host}")
             cmds = f"\"hostnamectl set-hostname {new_name} && systemctl restart avahi-daemon\""
             subprocess.Popen(f"ssh -oStrictHostKeyChecking=no root@{host} {cmds}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-            sleep(5)  
+            sleep(5)
 
-      
-    data = []
-    cmd = "avahi-browse --resolve -t -p _ssh._tcp | grep =;"
-    output = subprocess.check_output(cmd, shell=True).decode()
-    raw = output.split("\n")
-    for i in raw:
-        d = []
-        spl = i.split(";")
-        if len(spl) < 8:
-            continue
+    ssh_services = discover_ssh_services()
+    spectron_services = discover_spectron_services()
 
-        name = spl[3] + ".local"
-        ipv = spl[2]
-
-        if ipv != "IPv4":
-            continue
-
-        d.append("SSH")
-        d.append(ipv)
-        d.append(name)
-        d.append(spl[7]) #ip
-        port = spl[8]
-        d.append(port)
-        data.append(d)
-    return render_template("avahi.html", rows=data)
+    merged_services = []
+    for ssh in ssh_services:
+        ip_ssh = ssh[3]
+        for spec in spectron_services:
+            ip = spec[3]
+            if ip_ssh == ip:
+                ssh[0] = spec[0]
+                ssh[1] = spec[1]
+        merged_services.append(ssh)
+        
+    return render_template("avahi.html", rows = merged_services)
 
 if __name__ == '__main__':
     app.run()
+    
+#функция содержащая в себе данные о ssh сервисе
+def discover_ssh_services():
+    data = []
+    cmd = "avahi-browse --resolve -t -p _ssh._tcp | grep ="
+    try:
+        output = subprocess.check_output(cmd, shell=True).decode()
+        raw = output.split("\n")
+        for i in raw:
+            d = []
+            spl = i.split(";")
+            if len(spl) < 10:
+                continue
+
+           
+            ip = spl[7]
+            name = spl[3] + ".local"
+            ipv = spl[2]
+
+            if ipv != "IPv4":
+                continue
+            
+            d.append('<unknown>') 
+            d.append('<unknown>') 
+            d.append(name)
+            d.append(ip)
+            data.append(d)
+    except:
+        pass
+  
+    return data
+
+#функция содержащая в себе данные о spectron сервисе (добавлена)
+def discover_spectron_services():
+    data = []
+    cmd = "avahi-browse --resolve -t -p _spectron._tcp | grep ="
+    try:
+        output = subprocess.check_output(cmd, shell=True).decode()
+        raw = output.split("\n")
+        for i in raw:
+            d = []
+            spl = i.split(";")
+            if len(spl) < 10:
+                continue
+            
+            version, os = spl[9].split()
+            version_f = version.replace('"', ' ').strip().split('=')[1]
+            os_f = os.replace('"', ' ').strip().split('=')[1]
+            ip = spl[7]
+            name = spl[3] + ".local"            
+            ipv = spl[2]
+
+            if ipv != "IPv4":
+                continue
+      
+            d.append(version_f)
+            d.append(os_f)
+            d.append(name)
+            d.append(ip)
+            data.append(d)
+    except:
+        pass
+    
+    return data
+
