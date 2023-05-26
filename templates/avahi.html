@@ -3,6 +3,12 @@
 <head>
 	<title>Avahi Output</title>
 	<style>
+	
+		h1{
+			text-align: center;
+			padding: 8px;
+			border-bottom: 1px solid #ddd;
+		}
 		table {
 			border-collapse: collapse;
 			width: 100%;
@@ -12,11 +18,18 @@
 			color: #333;
 		}
 
-		th, td {
+		th{
+			text-align: left;
+			padding: 15px;
+			border-bottom: 1px solid #ddd;
+			font-weight: bolder;
+		}
+		td {
 			text-align: left;
 			padding: 8px;
 			border-bottom: 1px solid #ddd;
-		}
+			font-weight: lighter;
+			}
 
 		tr:nth-child(even) {
 			background-color: #f2f2f2;
@@ -24,6 +37,10 @@
 
 		tr:hover {
 			background-color: #f5f5f5;
+		}
+
+		tr:first-child:hover td {
+			background-color: transparent;
 		}
 
 		button {
@@ -46,6 +63,10 @@
 		}
 
 		input[type=text] {
+
+
+
+
 			padding: 6px;
 			border: 1px solid #ccc;
 			border-radius: 4px;
@@ -62,19 +83,19 @@
 	</style>
 </head>
 <body>
+	<h1 style="font-family: Arial;">ВСЕ УСТРОЙСТВА В СЕТИ<h1>
 	<form action="{{ url_for('avahi') }}" method="POST">
 	<table>
 		<tr>
-			<th>Service</th>
-			<th>IP Version</th>
-			<th>Hostname</th>
-			<th>IP Address</th>
-			<th>Port</th>
-			<th>New Name</th>
-			<th>Action</th>
+			<th>Имя приложения</th>
+			<th>Версия приложения</th>
+			<th>Имя хоста</th>
+			<th>IP Адресс</th>
+			<th>Добавить новое имя хоста</th>
+		
 
 		</tr>
-
+			
 			{% for row in rows %}
 			<tr>
 				{% for cell in row %}
@@ -83,7 +104,7 @@
 	 			<td><input type="text" name="new_name.{{row[2]}}"></td>
 				<td>
 					<input type="hidden" name="row_number" value="{{ loop.index }}">
-					<button type="submit" value="Change Name">Change Name</button>
+					<button type="submit" value="Change Name">Изменить имя</button>
 				</td>
 			</tr>
 		{% endfor %}
