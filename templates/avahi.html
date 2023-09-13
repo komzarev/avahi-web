@@ -87,11 +87,11 @@
 	<form action="{{ url_for('avahi') }}" method="POST">
 	<table>
 		<tr>
-			<th>Имя приложения</th>
-			<th>Версия приложения</th>
+			<th>Имя образа</th>
+			<th>Версия образа</th>
 			<th>Имя хоста</th>
 			<th>IP Адресс</th>
-			<th>Добавить новое имя хоста</th>
+			<th>Добавить примечание</th>
 		
 
 		</tr>
@@ -101,10 +101,10 @@
 				{% for cell in row %}
 					<td>{{ cell }}</td>
 				{% endfor %}
-	 			<td><input type="text" name="new_name.{{row[2]}}"></td>
+	 			<td><input type="text" name="new_name.{{row[2]}}" value="{{comments[row[2]]}}"></td>
 				<td>
 					<input type="hidden" name="row_number" value="{{ loop.index }}">
-					<button type="submit" value="Change Name">Изменить имя</button>
+					<button type="submit" value="Change Name">Добавить примечание</button>
 				</td>
 			</tr>
 		{% endfor %}

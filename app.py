@@ -2,11 +2,16 @@
 from flask import Flask, render_template, request
 import subprocess
 from time import sleep
+import json
+import os
 
 app = Flask(__name__)
+fileName = "avahi-comments.json"
+comments = {}
 
 @app.route('/avahi', methods=['GET', 'POST'])
 def avahi():
+    global comments
     if request.method == 'POST':
         host = None
         new_name = None
@@ -16,14 +21,21 @@ def avahi():
                 print(f"Before New name: {key} host: {new_name}")
                 if new_name:
                     host = key.partition('.')[-1]
-                    break
+                    if host:
+                        comments[host] = new_name
 
-        if host  and new_name:
-            print(f"New name: {new_name} host: {host}")
-            cmds = f"\"hostnamectl set-hostname {new_name} && systemctl restart avahi-daemon\""
-            subprocess.Popen(f"ssh -oStrictHostKeyChecking=no root@{host} {cmds}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-            sleep(5)
-
+        # if host  and new_name:
+        #     comments[host] = new_name
+        #     print(f"New name: {new_name} host: {host}")
+        with open(fileName, 'w') as f:
+            json.dump(comments, f)
+            # cmds = f"\"hostnamectl set-hostname {new_name} && systemctl restart avahi-daemon\""
+            # subprocess.Popen(f"ssh -oStrictHostKeyChecking=no root@{host} {cmds}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+            # sleep(5)
+    if os.path.exists(fileName):
+        with open(fileName, 'r') as f:
+            comments = json.load(f)
+        
     ssh_services = discover_ssh_services()
     spectron_services = discover_spectron_services()
 
@@ -36,8 +48,11 @@ def avahi():
                 ssh[0] = spec[0]
                 ssh[1] = spec[1]
         merged_services.append(ssh)
-        
-    return render_template("avahi.html", rows = merged_services)
+    for s in merged_services:
+        if s[2] not in comments:
+            comments[s[2]] = "test"
+            
+    return render_template("avahi.html", rows = merged_services, comments = comments)
 
 if __name__ == '__main__':
     app.run()
