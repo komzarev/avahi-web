@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, Response, make_response
 import subprocess
 from time import sleep
 import json
@@ -36,6 +36,12 @@ def avahi():
         with open(fileName, 'r') as f:
             comments = json.load(f)
         
+    merged_services = get_services()
+            
+    return render_template("avahi.html", rows = merged_services, comments = comments)
+
+def get_services():
+    global comments
     ssh_services = discover_ssh_services()
     spectron_services = discover_spectron_services()
 
@@ -50,13 +56,24 @@ def avahi():
         merged_services.append(ssh)
     for s in merged_services:
         if s[2] not in comments:
-            comments[s[2]] = "test"
-            
-    return render_template("avahi.html", rows = merged_services, comments = comments)
+            comments[s[2]] = ""
+    return merged_services
 
-if __name__ == '__main__':
-    app.run()
-    
+@app.route('/avahi-api', methods=['GET'])
+def avahi_api():
+    merged_services = get_services()
+    all = {}
+    for service in merged_services:
+        ret = {}
+        ret["os_version"] = service[1]
+        ret["name"] = service[2]
+        ret["ip"] = service[3]
+        ret["comment"] = comments[ret["name"]] if ret["name"] in comments else "" 
+        all[ret["name"]] = ret 
+    resp = make_response(all, 200)
+    resp.headers["Content-Type"] = "application/json"
+    return resp
+
 #функция содержащая в себе данные о ssh сервисе
 def discover_ssh_services():
     data = []
@@ -121,3 +138,5 @@ def discover_spectron_services():
     
     return data
 
+if __name__ == '__main__':
+    app.run()
