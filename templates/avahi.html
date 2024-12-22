@@ -84,7 +84,26 @@
 </head>
 <body>
 	<h1 style="font-family: Arial;">ВСЕ УСТРОЙСТВА В СЕТИ<h1>
-	<form action="{{ url_for('avahi') }}" method="POST">
+	<script>
+       function save_comment(input){
+               const dev_name = input.getAttribute('dev_name');
+			   const comment = document.getElementById("comment").value;
+
+               let all = {}
+               all["dev_name"] = dev_name
+               all["comment"] = comment
+              
+               fetch(`/set-comment`, {
+                   method: "POST",
+                   headers: {'Content-Type': 'application/json'}, 
+                   body: JSON.stringify(all)
+               }).then(res => {
+                   console.log("Save comment response:", res);
+               });
+       }
+       
+   </script>
+	<form>
 	<table>
 		<tr>
 			<th>Имя образа</th>
@@ -101,10 +120,10 @@
 				{% for cell in row %}
 					<td>{{ cell }}</td>
 				{% endfor %}
-	 			<td><input type="text" name="new_name.{{row[2]}}" value="{{comments[row[2]]}}"></td>
+	 			<td><input type="text" id="comment" name="new_name.{{row[2]}}" value="{{comments[row[2]]}}"></td>
 				<td>
 					<input type="hidden" name="row_number" value="{{ loop.index }}">
-					<button type="submit" value="Change Name">Добавить примечание</button>
+					<button type="submit" value="Change Name" dev_name="new_name.{{row[2]}}" onclick="save_comment(this)">Добавить примечание</button>
 				</td>
 			</tr>
 		{% endfor %}

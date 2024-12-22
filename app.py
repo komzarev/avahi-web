@@ -1,142 +1,47 @@
 
-from flask import Flask, render_template, request, Response, make_response
-import subprocess
-from time import sleep
 import json
-import os
+from fastapi import FastAPI, Request,Form
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+import search_devices
+from typing import Annotated
 
-app = Flask(__name__)
-fileName = "avahi-comments.json"
-comments = {}
+app = FastAPI()
 
-@app.route('/avahi', methods=['GET', 'POST'])
-def avahi():
-    global comments
-    if request.method == 'POST':
-        host = None
-        new_name = None
-        for key in request.form:
-            if key.startswith('new_name.'):
-                new_name = request.form[key]
-                print(f"Before New name: {key} host: {new_name}")
-                if new_name:
-                    host = key.partition('.')[-1]
-                    if host:
-                        comments[host] = new_name
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-        # if host  and new_name:
-        #     comments[host] = new_name
-        #     print(f"New name: {new_name} host: {host}")
-        with open(fileName, 'w') as f:
-            json.dump(comments, f)
-            # cmds = f"\"hostnamectl set-hostname {new_name} && systemctl restart avahi-daemon\""
-            # subprocess.Popen(f"ssh -oStrictHostKeyChecking=no root@{host} {cmds}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-            # sleep(5)
-    if os.path.exists(fileName):
-        with open(fileName, 'r') as f:
-            comments = json.load(f)
-        
-    merged_services = get_services()
-            
-    return render_template("avahi.html", rows = merged_services, comments = comments)
+@app.get("/")
+def index(request: Request):
+    merged_services = search_devices.get_services()
+    return templates.TemplateResponse("avahi.html", {"request": request, "rows" : merged_services, "comments" : search_devices.comments})
 
-def get_services():
-    global comments
-    ssh_services = discover_ssh_services()
-    spectron_services = discover_spectron_services()
-
-    merged_services = []
-    for ssh in ssh_services:
-        ip_ssh = ssh[3]
-        for spec in spectron_services:
-            ip = spec[3]
-            if ip_ssh == ip:
-                ssh[0] = spec[0]
-                ssh[1] = spec[1]
-        merged_services.append(ssh)
-    for s in merged_services:
-        if s[2] not in comments:
-            comments[s[2]] = ""
-    return merged_services
-
-@app.route('/avahi-api', methods=['GET'])
-def avahi_api():
-    merged_services = get_services()
+@app.get('/api')
+def avahi_api(request: Request):
+    merged_services = search_devices.get_services()
     all = {}
     for service in merged_services:
         ret = {}
         ret["os_version"] = service[1]
         ret["name"] = service[2]
         ret["ip"] = service[3]
-        ret["comment"] = comments[ret["name"]] if ret["name"] in comments else "" 
+        ret["comment"] = search_devices.comments[ret["name"]] if ret["name"] in search_devices.comments else "" 
         all[ret["name"]] = ret 
-    resp = make_response(all, 200)
-    resp.headers["Content-Type"] = "application/json"
-    return resp
+    return JSONResponse(all)
 
-#функция содержащая в себе данные о ssh сервисе
-def discover_ssh_services():
-    data = []
-    cmd = "avahi-browse --resolve -t -p _ssh._tcp | grep ="
-    try:
-        output = subprocess.check_output(cmd, shell=True).decode()
-        raw = output.split("\n")
-        for i in raw:
-            d = []
-            spl = i.split(";")
-            if len(spl) < 10:
-                continue
-
-           
-            ip = spl[7]
-            name = spl[3] + ".local"
-            ipv = spl[2]
-
-            if ipv != "IPv4":
-                continue
-            
-            d.append('<unknown>') 
-            d.append('<unknown>') 
-            d.append(name)
-            d.append(ip)
-            data.append(d)
-    except:
-        pass
-  
-    return data
-
-#функция содержащая в себе данные о spectron сервисе (добавлена)
-def discover_spectron_services():
-    data = []
-    cmd = "avahi-browse --resolve -t -p _spectron._tcp | grep ="
-    try:
-        output = subprocess.check_output(cmd, shell=True).decode()
-        raw = output.split("\n")
-        for i in raw:
-            d = []
-            spl = i.split(";")
-            if len(spl) < 10:
-                continue
-            
-            version, os = spl[9].split()
-            version_f = version.replace('"', ' ').strip().split('=')[1]
-            os_f = os.replace('"', ' ').strip().split('=')[1]
-            ip = spl[7]
-            name = spl[3] + ".local"            
-            ipv = spl[2]
-
-            if ipv != "IPv4":
-                continue
-      
-            d.append(version_f)
-            d.append(os_f)
-            d.append(name)
-            d.append(ip)
-            data.append(d)
-    except:
-        pass
+class CommentUpdate(BaseModel):
+    dev_name: str
+    comment: str
     
-    return data
+@app.post('/set-comment')
+def set_comment(data: CommentUpdate, request: Request):
+    host = data.dev_name.partition('.')[-1]
+    if host:
+        search_devices.comments[host] = data.comment
 
-if __name__ == '__main__':
-    app.run()
+    with open(search_devices.fileName, 'w') as f:
+        json.dump(search_devices.comments, f)
+    return f"for {data.dev_name} set comment {data.comment}"
+
