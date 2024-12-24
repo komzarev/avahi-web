@@ -1,133 +1,119 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Avahi Output</title>
-	<style>
-	
-		h1{
-			text-align: center;
-			padding: 8px;
-			border-bottom: 1px solid #ddd;
-		}
-		table {
-			border-collapse: collapse;
-			width: 100%;
-			border: 1px solid #ddd;
-			font-family: Arial, sans-serif;
-			font-size: 14px;
-			color: #333;
-		}
+    <title>Avahi v2</title>
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #121212; /* Dark background */
+    }
 
-		th{
-			text-align: left;
-			padding: 15px;
-			border-bottom: 1px solid #ddd;
-			font-weight: bolder;
-		}
-		td {
-			text-align: left;
-			padding: 8px;
-			border-bottom: 1px solid #ddd;
-			font-weight: lighter;
-			}
+    table {
+        border-radius: 10px; /* Rounded edges for the table */
+        overflow: hidden; /* Ensures the rounding works */
+    }
+    .form-control {
+        background-color: #2c2c2c; /* Dark input background */
+        border: 1px solid #444; /* Border for inputs */
+		color: white; /* Light green text for header */
+    }
+    .form-control:focus {
+        background-color: #333;
+        border-color: #81c784; /* Highlight color on focus */
+        box-shadow: 0 0 5px #81c784;
+		color: #81c784; /* Light green text for header */
+    }
 
-		tr:nth-child(even) {
-			background-color: #f2f2f2;
-		}
+    .header-frame {
+        background-color: #1e1e1e; /* Dark background */
+        color: #81c784; /* Light green text */
+        padding: 15px;
+        border-radius: 10px; /* Rounded edges for the header frame */
+        text-align: center;
+        margin-bottom: 20px;
+    }
 
-		tr:hover {
-			background-color: #f5f5f5;
-		}
+	.header-frame:hover {
+	    background-color: #1e1e1e; /* Dark background */
+	    color: #81c784; /* Light green text */
+	    padding: 15px;
+	    border-radius: 10px; /* Rounded edges for the header frame */
+	    text-align: center;
+	    margin-bottom: 20px;
+		box-shadow: 0 0 5px #81c784;
+	}
+	tr.green-text th {
+	    background-color: #1e1e1e!important; 
+		color: #81c784!important;
+	}
+	tr.green-text td {
+	    background-color: #1e1e1e!important; 
+		/* color: #81c784!important; */
+	}
 
-		tr:first-child:hover td {
-			background-color: transparent;
-		}
-
-		button {
-			background-color: #4CAF50;
-			border: none;
-			color: white;
-			padding: 8px 16px;
-			text-align: center;
-			text-decoration: none;
-			display: inline-block;
-			font-size: 14px;
-			margin: 4px 2px;
-			cursor: pointer;
-			border-radius: 4px;
-			transition: background-color 0.3s;
-		}
-
-		button:hover {
-			background-color: #3e8e41;
-		}
-
-		input[type=text] {
-
-
-
-
-			padding: 6px;
-			border: 1px solid #ccc;
-			border-radius: 4px;
-			box-sizing: border-box;
-			font-size: 14px;
-			width: 100%;
-		}
-
-		input[type=text]:focus {
-			border-color: #4CAF50;
-			box-shadow: 0 0 8px 0 rgba(76, 175, 80, 0.4);
-			outline: none;
-		}
-	</style>
+</style>
 </head>
 <body>
-	<h1 style="font-family: Arial;">ВСЕ УСТРОЙСТВА В СЕТИ<h1>
-	<script>
-       function save_comment(input){
-               const dev_name = input.getAttribute('dev_name');
-			   const comment = document.getElementById("comment").value;
+    <div class="container my-5">
+	<div class="header-frame">
+		<h1 class="mb-0">ПРИБОРЫ В СЕТИ СПЕКТРОН</h1>
+	</div>
 
-               let all = {}
-               all["dev_name"] = dev_name
-               all["comment"] = comment
-              
-               fetch(`/set-comment`, {
-                   method: "POST",
-                   headers: {'Content-Type': 'application/json'}, 
-                   body: JSON.stringify(all)
-               }).then(res => {
-                   console.log("Save comment response:", res);
-               });
-       }
-       
-   </script>
-	<form>
-	<table>
-		<tr>
-			<th>Имя образа</th>
-			<th>Версия образа</th>
-			<th>Имя хоста</th>
-			<th>IP Адрес</th>
-			<th>Добавить примечание</th>
-		
 
-		</tr>
-			
-			{% for row in rows %}
-			<tr>
-				{% for cell in row %}
-					<td>{{ cell }}</td>
-				{% endfor %}
-	 			<td><input type="text" id="comment" name="new_name.{{row[2]}}" value="{{comments[row[2]]}}"></td>
-				<td>
-					<input type="hidden" name="row_number" value="{{ loop.index }}">
-					<button type="submit" value="Change Name" dev_name="new_name.{{row[2]}}" onclick="save_comment(this)">Добавить примечание</button>
-				</td>
-			</tr>
-		{% endfor %}
-	</table>
-	</form>
+        <script>
+            function save_comment(event, input) {
+                event.preventDefault();
+                const dev_name = input.getAttribute('name');
+                const comment = input.value;
+
+                let all = {};
+                all["dev_name"] = dev_name;
+                all["comment"] = comment;
+
+                fetch(`/set-comment`, {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(all)
+                }).then(res => {
+                    console.log("Save comment response:", res);
+                });
+            }
+        </script>
+
+        <form>
+            <div class="table-responsive">
+                <table class="table table-hover table-dark table-borderless">
+                    <thead>
+                        <tr class="green-text">
+                            <th>Образ ОС</th>
+                            <th>Версия OC</th>
+                            <th>Имя прибора</th>
+                            <th>IP Адрес</th>
+                            <th>Добавить комментарий</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        {% for row in rows %}
+                        <tr class="green-text">
+                            {% for cell in row %}
+                            <td>{{ cell }}</td>
+                            {% endfor %}
+                            <td>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    name="new_name.{{row[2]}}" 
+                                    value="{{comments[row[2]]}}"
+                                    onkeydown="if (event.key === 'Enter') save_comment(event, this)">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+
 </body>
 </html>
