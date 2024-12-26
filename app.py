@@ -27,6 +27,11 @@ async def update_chache():
     global_devices = search_devices.get_services()
     await asyncio.sleep(10)
 
+@app.get("/matrix")
+async def index(request: Request):
+    global global_devices
+    return templates.TemplateResponse("avahi_matrix.html", {"request": request, "rows" : global_devices, "comments" : search_devices.comments})
+
 @app.get("/")
 async def index(request: Request):
     global global_devices

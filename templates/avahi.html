@@ -4,121 +4,18 @@
     <title>Avahi v2</title>
     <link href="/static/bootstrap.min.css" rel="stylesheet">
 <style>
-	@keyframes matrix-fall {
-	    0% {
-	        transform: translateY(-100%);
-	    }
-	    100% {
-	        transform: translateY(100%);
-	    }
-	}
-	
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: #121212; /* Dark background */
-    }
 
-    table {
-        border-radius: 10px; /* Rounded edges for the table */
-        overflow: hidden; /* Ensures the rounding works */
-    }
-    .form-control {
-        background-color: #2c2c2c; /* Dark input background */
-        border: 1px solid #444; /* Border for inputs */
-		color: white; /* Light green text for header */
-    }
-    .form-control:focus {
-        background-color: #333;
-        border-color: #81c784; /* Highlight color on focus */
-        box-shadow: 0 0 5px #81c784;
-		color: #81c784; /* Light green text for header */
-    }
+  body {
+      font-family: 'Arial', sans-serif;
+  }
 
-    .header-frame {
-		background-color: rgba(30, 30, 30, 0.8); 
-        /* background-color: #1e1e1e;  */
-        color: #81c784; /* Light green text */
-        padding: 15px;
-        border-radius: 10px; /* Rounded edges for the header frame */
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-	.header-frame:hover {
-	    background-color: #1e1e1e; /* Dark background */
-	    color: #81c784; /* Light green text */
-	    padding: 15px;
-	    border-radius: 10px; /* Rounded edges for the header frame */
-	    text-align: center;
-	    margin-bottom: 20px;
-		box-shadow: 0 0 5px #81c784;
-	}
-
-	tr.green-text th {
-	    background-color: #1e1e1e!important; 
-		color: #81c784!important;
-	}
-	tr.green-text td {
-	    background-color: #1e1e1e!important; 
-		/* color: #81c784!important; */
-	}
-	.matrix-background {
-	    position: fixed;
-	    top: 0;
-	    left: 0;
-	    width: 100%;
-	    height: 100%;
-	    z-index: -1;
-	    overflow: hidden;
-	}
-	
-	.matrix-column {
-	    position: absolute;
-	    top: 0;
-	    left: 0;
-	    bottom: 0;
-	    width: 1em;
-	    color: #00ff00; /* Neon green */
-	    font-size: 1.5rem;
-	    white-space: nowrap;
-	    overflow: hidden;
-	    animation: matrix-fall linear infinite;
-	}
-	
-	.matrix-column:nth-child(odd) {
-	    animation-duration: 15s;
-	}
-	
-	.matrix-column:nth-child(even) {
-	    animation-duration: 35s;
-	}
 
 </style>
 </head>
 <body>
-	<div class="matrix-background">
-	    <!-- Generate columns of falling characters -->
-	    <script>
-	        const matrixBackground = document.querySelector('.matrix-background');
-	        const columns = 80; // Number of columns
-	
-	        for (let i = 0; i < columns; i++) {
-	            const column = document.createElement('div');
-	            column.classList.add('matrix-column');
-	            column.style.left = `${i * 1.5}em`;
-	
-	            // Add random characters to each column
-	            for (let j = 0; j < 100; j++) {
-	                const char = document.createElement('div');
-	                char.textContent = String.fromCharCode(0x30A0 + Math.random() * 96);
-	                column.appendChild(char);
-	            }
-	            matrixBackground.appendChild(column);
-	        }
-	    </script>
-	</div>
+
     <div class="container my-5">
-	<div class="header-frame">
+        <div class="p-3 mb-4 text-bg-secondary rounded-3 text-center">
 		<h1 class="mb-0">ПРИБОРЫ В СЕТИ СПЕКТРОН</h1>
 	</div>
 
@@ -144,10 +41,11 @@
         </script>
 
         <form>
-            <div class="table-responsive">
-                <table class="table table-hover table-dark table-borderless">
-                    <thead>
-                        <tr class="green-text">
+            <div class="table-responsive card rounded-3 ">
+                <table class="table table-bordered table-hover rounded-3 border overflow-hidden ">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>№</th>
                             <th>Образ ОС</th>
                             <th>Версия OC</th>
                             <th>Имя прибора</th>
@@ -157,7 +55,8 @@
                     </thead>
                     <tbody class="table-group-divider">
                         {% for row in rows %}
-                        <tr class="green-text">
+                        <tr>
+                            <th scope="row"> {{ loop.index0 + 1 }}</td>
                             {% for cell in row %}
                             <td>{{ cell }}</td>
                             {% endfor %}
@@ -175,6 +74,14 @@
                 </table>
             </div>
         </form>
+        <footer class="mt-5 pt-3 border-top text-center">
+            <p class="mb-0">© 2024 Avahi Spectron</p>
+            <p class="mt-2">
+                <a href="/api" class="text-decoration-none">API</a> |
+                <a href="/matrix" class="text-decoration-none">Matrix Theme</a> |
+                <a href="/docs" class="text-decoration-none">OpenAPI</a>
+            </p>
+        </footer>
     </div>
 
 </body>

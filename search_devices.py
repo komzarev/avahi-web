@@ -23,6 +23,8 @@ def get_services():
     for s in merged_services:
         if s[2] not in comments:
             comments[s[2]] = ""
+
+    merged_services.sort(key=lambda x : x[0])
     return merged_services
 
 #функция содержащая в себе данные о ssh сервисе
