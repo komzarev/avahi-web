@@ -24,8 +24,9 @@ global_devices = []
 
 async def update_chache():
     global global_devices
-    global_devices = search_devices.get_services()
-    await asyncio.sleep(10)
+    while True:
+        global_devices = search_devices.get_services()
+        await asyncio.sleep(10)
 
 @app.get("/matrix")
 async def index(request: Request):
@@ -42,14 +43,14 @@ async def index(request: Request):
 async def avahi_api(request: Request):
     global global_devices
     merged_services = global_devices
-    all = {}
+    all = []
     for service in merged_services:
         ret = {}
         ret["os_version"] = service[1]
         ret["name"] = service[2]
         ret["ip"] = service[3]
         ret["comment"] = search_devices.comments[ret["name"]] if ret["name"] in search_devices.comments else "" 
-        all[ret["name"]] = ret 
+        all.append(ret)
     return JSONResponse(all)
 
 class CommentUpdate(BaseModel):
