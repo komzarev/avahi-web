@@ -25,8 +25,11 @@ global_devices = []
 async def update_chache():
     global global_devices
     while True:
-        global_devices = search_devices.get_services()
-        await asyncio.sleep(10)
+        try:
+            global_devices = search_devices.get_services()
+            await asyncio.sleep(10)
+        except:
+            pass
 
 @app.get("/matrix")
 async def index(request: Request):
