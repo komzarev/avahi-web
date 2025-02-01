@@ -14,8 +14,9 @@ deploy-job:
     - rm -rf $DEPLOY_DIR
     - mkdir -p $DEPLOY_DIR
     - cp -a . $DEPLOY_DIR
+    - cd $DEPLOY_DIR
     - python3 -m venv venv
-    - cd $DEPLOY_DIR && source venv/bin/activate 
+    - source venv/bin/activate 
     - pip install -r requirements.txt
     - sudo systemctl restart avahi-web
     - echo "Application successfully deployed."
