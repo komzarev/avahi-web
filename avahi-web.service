@@ -1,0 +1,13 @@
+[Unit]
+Description=Avahi-web
+After=network.target
+
+[Service]
+User=gitlab-runner
+WorkingDirectory=/home/gitlab-runner/avahi-web
+ExecStart=/home/gitlab-runner/avahi-web/venv/bin/uvicorn --reload --port 8002 --host 0.0.0.0 app:app
+Restart=on-failure
+RuntimeMaxSec=1d
+
+[Install]
+WantedBy=multi-user.target

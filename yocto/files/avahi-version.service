@@ -1,0 +1,11 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+
+<service-group>
+  <name replace-wildcards="yes">%h</name>
+  <service protocol="ipv4">
+    <type>_spectron._tcp</type>
+    <txt-record>version=VERSION</txt-record>
+    <txt-record>app_name=APP_NAME</txt-record>
+  </service>
+</service-group>
