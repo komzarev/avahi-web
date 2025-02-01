@@ -22,7 +22,7 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/matrix")
-async def index(request: Request):
+async def index_matrix(request: Request):
     return templates.TemplateResponse("avahi_matrix.html", {"request": request})
 
 @app.get("/")
