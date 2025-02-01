@@ -143,34 +143,55 @@
             }
         </script>
 
+        <script>
+            const eventSource = new EventSource('/stream');
+        
+            eventSource.addEventListener('new_message', event => {
+              var dataList = document.getElementById('data-list');
+              dataList.innerHTML = ""
+              console.log(event.data)
+            const devices = JSON.parse(event.data);
+            console.log(devices)
+            var i = 1
+            devices.forEach(device => {
+                const row = document.createElement('tr')
+                row.innerHTML += `<th scope="row"> ${i}</th>
+                                <td>${device.os}</td>
+                                <td>${device.os_version}</td>
+                                <td>${device.name}</td>
+                                <td>${device.ip}</td>
+                                <td>${device.ping}</td>
+                                <td>
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        name="new_name.${device.name}" 
+                                        value="${device.comment}"
+                                        onkeydown="if (event.key === 'Enter') save_comment(event, this)">
+                                </td>`;
+                
+                dataList.appendChild(row)
+                i = i + 1
+            });
+          });
+        </script>
+
         <form>
             <div class="table-responsive">
                 <table class="table table-hover table-dark table-borderless">
                     <thead>
                         <tr class="green-text">
+                            <th>№</th>
                             <th>Образ ОС</th>
                             <th>Версия OC</th>
                             <th>Имя прибора</th>
                             <th>IP Адрес</th>
+                            <th>Ping</th>
                             <th>Добавить комментарий</th>
                         </tr>
                     </thead>
-                    <tbody class="table-group-divider">
-                        {% for row in rows %}
-                        <tr class="green-text">
-                            {% for cell in row %}
-                            <td>{{ cell }}</td>
-                            {% endfor %}
-                            <td>
-                                <input 
-                                    type="text" 
-                                    class="form-control" 
-                                    name="new_name.{{row[2]}}" 
-                                    value="{{comments[row[2]]}}"
-                                    onkeydown="if (event.key === 'Enter') save_comment(event, this)">
-                            </td>
-                        </tr>
-                        {% endfor %}
+                    <tbody class="table-group-divider" id="data-list">
+
                     </tbody>
                 </table>
             </div>
