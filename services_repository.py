@@ -4,7 +4,8 @@ from typing import Dict, List
 from pydantic import BaseModel
 from zeroconf import ServiceBrowser, ServiceInfo, ServiceListener, Zeroconf, IPVersion
 import socket
-from ping3 import ping
+import aioping
+
 
 class MyServiceInfo(BaseModel):
     ping: str = None
@@ -81,11 +82,11 @@ class ServiceRepository:
             with open(self.comment_fileName, 'r') as f:
                 self.comments = json.load(f)
         
-    def get_services(self) -> List[MyServiceInfo]:
+    async def get_services(self) -> List[MyServiceInfo]:
         all: List[MyServiceInfo] = []
         for k,i in self.services.items():
             i.comment = self.comments[k] if k in self.comments else ""
-            png = ping(i.ip,unit="ms")
+            png = await aioping.ping(i.ip) * 1000 #"ms"
             if png:
                 i.ping = f"{png:.1f} ms"
                 all.append(i)
