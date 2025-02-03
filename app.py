@@ -9,14 +9,32 @@ from typing import List
 from sse_starlette.sse import EventSourceResponse
 from typing import Iterable
 from pydantic.json import pydantic_encoder
+from contextlib import asynccontextmanager
 
 from services_repository import MyServiceInfo, ServiceRepository
 
-repo = ServiceRepository()
+
 STREAM_DELAY = 5  # second
 RETRY_TIMEOUT = 15000  # millisecond
+global_devices = []
+repo = ServiceRepository()
 
-app = FastAPI()
+async def update_chache():
+    global global_devices
+    while True:
+        try:
+            global_devices = await repo.get_services()
+            await asyncio.sleep(10)
+        except:
+            pass
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    asyncio.create_task(update_chache())
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -31,7 +49,7 @@ async def index(request: Request):
 
 @app.get('/api')
 async def avahi_api(request: Request)->List[MyServiceInfo]:
-    return repo.get_services()
+    return global_devices
 
 class CommentUpdate(BaseModel):
     dev_name: str
@@ -51,7 +69,7 @@ async def event_generator(request: Request):
             {
                 "event": "new_message",
                 "retry": RETRY_TIMEOUT,
-                "data": json.dumps(repo.get_services(),default=pydantic_encoder)
+                "data": json.dumps(global_devices,default=pydantic_encoder)
             }
         ]
     while True:
