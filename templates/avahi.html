@@ -8,7 +8,38 @@
   body {
       font-family: 'Arial', sans-serif;
   }
-
+	
+  .loader {
+    border: 2px solid #FFF;
+    width: 24px;
+    height: 24px;
+    background: #969799;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
+    animation: rotation 2s linear infinite;
+  }
+  .loader::after {
+    content: '';  
+    box-sizing: border-box;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border: 12px solid;
+    border-color: transparent #FFF;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  } 
 
 </style>
 </head>
@@ -41,6 +72,13 @@
         </script>
 
         <script>
+	   function set_spiner()
+           {
+                    var dataList = document.getElementsByName('spin_place');
+                    dataList.forEach(td => {
+                        td.innerHTML = `<span class="loader"></span>`
+                    })
+            }
             const eventSource = new EventSource('/stream');
 
             eventSource.addEventListener('new_message', event => {
@@ -57,7 +95,7 @@
                                 <td>${device.os_version}</td>
                                 <td>${device.name}</td>
                                 <td>${device.ip}</td>
-                                <td>${device.ping}</td>
+                                <td name=spin_place>${device.ping}</td>
                                 <td>
                                     <input 
                                         type="text" 
@@ -68,6 +106,7 @@
                                 </td>`;
                 dataList.appendChild(row)
                 i++
+	        setTimeout(function() { set_spiner(); }, 4000);
             });
           });
         </script>
