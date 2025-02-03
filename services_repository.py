@@ -86,7 +86,10 @@ class ServiceRepository:
         all: List[MyServiceInfo] = []
         for k,i in self.services.items():
             i.comment = self.comments[k] if k in self.comments else ""
-            png = await aioping.ping(i.ip) * 1000 #"ms"
+            try:
+                png = await aioping.ping(i.ip,timeout=3) * 1000 #"ms"
+            except:
+                png = None
             if png:
                 i.ping = f"{png:.1f} ms"
                 all.append(i)
