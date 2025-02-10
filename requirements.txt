@@ -16,3 +16,4 @@ starlette==0.41.3
 typing_extensions==4.12.2
 uvicorn==0.34.0
 aioping==0.4.0
+cysystemd==2.0.1
