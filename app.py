@@ -12,10 +12,18 @@ from pydantic.json import pydantic_encoder
 from contextlib import asynccontextmanager
 
 from services_repository import MyServiceInfo, ServiceRepository
+import logging
+from cysystemd import journal
 
+logging.basicConfig(
+    encoding="utf-8",
+    level=logging.INFO,
+    format="[%(levelname)s][%(name)s] : %(message)s",
+    handlers=[journal.JournaldLogHandler()]
+)
 
-STREAM_DELAY = 5  # second
-RETRY_TIMEOUT = 15000  # millisecond
+STREAM_DELAY = 10  # second
+RETRY_TIMEOUT = 30000  # millisecond
 global_devices = []
 repo = ServiceRepository()
 
@@ -35,9 +43,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 @app.get("/matrix")
 async def index_matrix(request: Request):
